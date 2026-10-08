@@ -6,6 +6,8 @@ A patch/modification for **Foundry Virtual Tabletop** that introduces native sup
 
 [REPOSITORY BUILDER](https://deniztadice.github.io/crm-fvtt/)
 
+[SCREENSHOTS](screenshots/SCREENSHOTS.md)
+
 ---
 
 ## 🌟 Key Features

@@ -6,6 +6,8 @@
 
 [КОНСТРУКТОР РЕПОЗИТОРІЯ](https://deniztadice.github.io/crm-fvtt/)
 
+[СКРІНШОТИ](screenshots/SCREENSHOTS.md)
+
 ---
 
 ## 🌟 Основні можливості
