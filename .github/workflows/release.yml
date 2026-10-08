@@ -1,0 +1,92 @@
+name: Release Script Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'script/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force recreate release even if tag already exists'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 'release'
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check script version
+        id: check_version
+        run: |
+          VERSION=$(grep -E 'const[[:space:]]+SCRIPT_VERSION' script/custom-repo.mjs | sed -E 's/.*"([^"]+)".*/\1/' || true)
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not extract SCRIPT_VERSION from script/custom-repo.mjs" >&2
+            exit 1
+          fi
+          TAG="v${VERSION}"
+          echo "Detected script version: ${VERSION} (${TAG})"
+
+          FORCE="${{ inputs.force || false }}"
+          if [ "$FORCE" = "true" ]; then
+            echo "Force flag is set. Release will be triggered."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "${TAG}"; then
+            echo "Release tag ${TAG} already exists on remote. No new release needed."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New version detected (${TAG}). A new release will be created."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Package script archive
+        if: steps.check_version.outputs.should_release == 'true'
+        run: |
+          VERSION="${{ steps.check_version.outputs.version }}"
+          TAG="${{ steps.check_version.outputs.tag }}"
+
+          chmod +x script/install.sh
+          cd script
+          zip -r ../crm-fvtt.zip . -x "*.git*"
+          cd ..
+          cp crm-fvtt.zip "crm-fvtt-${TAG}.zip"
+
+          echo "Successfully created crm-fvtt.zip and crm-fvtt-${TAG}.zip"
+
+      - name: Publish GitHub Release
+        if: steps.check_version.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.check_version.outputs.tag }}
+          FORCE: ${{ inputs.force || false }}
+        run: |
+          if [ "$FORCE" = "true" ]; then
+            echo "Removing existing release and tag for ${TAG}..."
+            gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          fi
+
+          echo "Creating GitHub Release ${TAG}..."
+          gh release create "$TAG" \
+            crm-fvtt.zip \
+            "crm-fvtt-${TAG}.zip" \
+            --title "Custom Repository Patch ${TAG}" \
+            --generate-notes

@@ -1,8 +1,10 @@
-# Foundry VTT v14 — Custom Repository Patch
+# Custom Repository Manager for VTT
 
 [Українська версія](README_UA.md)
 
 A patch/modification for **Foundry Virtual Tabletop** that introduces native support for third-party, private, and community package repositories (modules, game systems, and worlds) directly within the application's user interface.
+
+[REPOSITORY BUILDER](https://deniztadice.github.io/crm-fvtt/)
 
 ---
 
@@ -48,31 +50,46 @@ A patch/modification for **Foundry Virtual Tabletop** that introduces native sup
 
 ## 🚀 Installation
 
-### Option 1: Automatic Installation via `install.sh` (Recommended)
+### Option 1: Quick One-Line Installation (Recommended)
 
-The installer script automatically detects your Foundry VTT directory, copies the required files, creates a backup of `setup.hbs`, and cleanly injects the module loader.
+Run this single command on your server in the terminal:
 
-0. Download the ZIP archive from the GitHub repository and extract it.
-  
-1. Open a terminal in the extracted folder, navigate to the patch files directory, and make the script executable:
+```bash
+curl -sSL https://raw.githubusercontent.com/deniztadice/crm-fvtt/main/install.sh | bash
+```
+
+The script will automatically:
+
+1. Download the latest release package (`crm-fvtt.zip`) and extract the necessary files.
+2. Auto-detect your Foundry VTT installation directory (or ask you to enter the path interactively if it cannot find it automatically).
+3. Back up `setup.hbs` and inject the script module.
+4. Install all templates and scripts into your Foundry `public/` folder.
+
+*To pass an explicit path directly:*
+
+```bash
+curl -sSL https://raw.githubusercontent.com/deniztadice/crm-fvtt/main/install.sh | bash -s -- -p /path/to/foundry
+```
+
+*To uninstall using the one-liner:*
+
+```bash
+curl -sSL https://raw.githubusercontent.com/deniztadice/crm-fvtt/main/install.sh | bash -s -- --uninstall
+```
+
+---
+
+### Option 2: Local Installation via ZIP Archive
+
+1. Download the latest `crm-fvtt.zip` from [Releases](https://github.com/deniztadice/crm-fvtt/releases/latest) and extract it.
+2. Open a terminal in the extracted folder and run:
 
    ```bash
    chmod +x install.sh
-   ```
-
-2. Run the installer:
-
-   ```bash
    ./install.sh
    ```
 
-   *If the script cannot automatically detect your Foundry VTT directory, provide the path directly:*
-
-   ```bash
-   ./install.sh /path/to/foundry
-   ```
-
-   *Or with the `-p` / `--path` flag:*
+   *If Foundry is installed in a non-standard location, the script will prompt you for the path, or you can provide it directly:*
 
    ```bash
    ./install.sh -p /path/to/foundry
@@ -80,7 +97,7 @@ The installer script automatically detects your Foundry VTT directory, copies th
 
 3. Restart the Foundry VTT server.
 
-#### Uninstalling the Patch
+#### Uninstalling the Patch Locally
 
 To restore Foundry VTT to its original state:
 
@@ -88,19 +105,11 @@ To restore Foundry VTT to its original state:
 ./install.sh --uninstall
 ```
 
-*Or using the short flag:*
+The script will automatically restore the original `setup.hbs` from the backup and remove all added patch files. Restart the Foundry VTT server afterwards.
 
-```bash
-./install.sh -u
-```
+---
 
-*If the script does not find the Foundry VTT directory automatically, specify the path:*
-
-```bash
-./install.sh -u /path/to/foundry
-```
-
-The script will automatically restore the original `setup.hbs` from the backup and remove all added patch files (scripts and templates). Restart the Foundry VTT server afterwards.
+### Option 3: Manual Installation
 
 ---
 

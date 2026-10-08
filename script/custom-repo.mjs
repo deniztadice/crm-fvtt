@@ -6,6 +6,8 @@
  * full backup and restore (JSON export/import), and real-time filtering.
  */
 
+const SCRIPT_VERSION = "1.0.0"
+
 const STORAGE_KEY = "foundry_custom_repositories";
 const DEFAULT_REPOSITORIES = [];
 
