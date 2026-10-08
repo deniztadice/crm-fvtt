@@ -147,8 +147,8 @@
       "autoUpdateHint": "Автоматичне оновлення при кожній зміні"
     },
     "footer": {
-      "title": "Foundry VTT Custom Repository Manager (CRM-FVTT)",
-      "desc": "Сумісно з Foundry VTT v13 / v14 • Створено для швидкого керування пакетами"
+      "title": "Custom Repository Manager",
+      "desc": "Сумісно з Foundry VTT v14 • Створено для швидкого керування пакетами"
     },
     "editModal": {
       "title": "Редагування пакета",
@@ -357,8 +357,8 @@
       "autoUpdateHint": "Automatically updated on every change"
     },
     "footer": {
-      "title": "Foundry VTT Custom Repository Manager (CRM-FVTT)",
-      "desc": "Compatible with Foundry VTT v13 / v14 • Built for fast package management"
+      "title": "Custom Repository Manager",
+      "desc": "Compatible with Foundry VTT v14 • Built for fast package management"
     },
     "editModal": {
       "title": "Edit Package",
