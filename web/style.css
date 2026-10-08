@@ -1,0 +1,176 @@
+/* Custom Styles & Foundry VTT Theme Accents */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Mono:wght@100..900&display=swap');
+
+:root {
+  --foundry-bg-dark: #0f141f;
+  --foundry-bg-card: #151d2d;
+  --foundry-bg-surface: #1d263b;
+  --foundry-border: #2c3850;
+  --foundry-gold: #f59e0b;
+  --foundry-amber: #d97706;
+  --foundry-text-primary: #f1f5f9;
+  --foundry-text-secondary: #94a3b8;
+  --foundry-success: #10b981;
+  --foundry-warning: #f59e0b;
+  --foundry-danger: #ef4444;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--foundry-bg-dark);
+  color: var(--foundry-text-primary);
+  min-height: 100vh;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: "Noto Sans Mono", monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d121c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a374d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4d6b;
+}
+
+/* Drag & Drop Zone */
+.dropzone-active {
+  border-color: #f59e0b !important;
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.25) !important;
+  transform: scale(1.008);
+}
+
+/* Foundry VTT Package Card Style Replication */
+.fvtt-card {
+  background: linear-gradient(180deg, #182236 0%, #121a2a 100%);
+  border: 1px solid #2d3b55;
+  border-radius: 6px;
+  padding: 12px 16px;
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fvtt-card:hover {
+  border-color: #43587e;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.fvtt-install-btn {
+  background: #202b3f;
+  border: 1px solid #3c4e6e;
+  color: #f1f5f9;
+  transition: all 0.15s ease;
+}
+
+.fvtt-install-btn:hover {
+  background: #2a3954;
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.fvtt-repo-badge {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+.fvtt-verified-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+
+.fvtt-verified-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+.fvtt-tag {
+  background: #1c273a;
+  border: 1px solid #2e3f5c;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* JSON Code Highlight Simulation */
+.json-key {
+  color: #7dd3fc;
+}
+
+.json-string {
+  color: #86efac;
+}
+
+.json-number {
+  color: #fcd34d;
+}
+
+.json-boolean {
+  color: #f472b6;
+}
+
+.json-null {
+  color: #94a3b8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* Modal Backdrop */
+dialog::backdrop {
+  background: rgba(5, 8, 15, 0.8);
+  backdrop-filter: blur(4px);
+}

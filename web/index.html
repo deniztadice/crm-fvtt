@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="meta.pageTitle">Конструктор репозиторіїв Foundry VTT (CRM-FVTT)</title>
+    <!-- Preload translations -->
+    <link rel="preload" href="translations.json" as="fetch" crossorigin="anonymous">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        foundry: {
+                            950: '#0a0e17',
+                            900: '#0f172a',
+                            850: '#131d35',
+                            800: '#1e293b',
+                            700: '#334155',
+                            600: '#475569',
+                            gold: '#f59e0b',
+                            amber: '#d97706',
+                            card: '#151d2d',
+                            border: '#2a374d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome 6 for authentic Foundry VTT Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="flex flex-col bg-foundry-950 selection:bg-amber-500 min-h-screen text-slate-100 selection:text-slate-950">
+
+    <!-- Header Navigation -->
+    <header class="top-0 z-40 sticky bg-foundry-900/90 shadow-lg backdrop-blur-md border-foundry-border border-b">
+        <div class="flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl h-16">
+            <div class="flex items-center gap-3">
+                <div
+                    class="flex justify-center items-center bg-gradient-to-br from-amber-500 to-amber-700 shadow-md rounded-lg w-10 h-10 font-bold text-slate-950 text-xl">
+                    <i class="text-slate-950 fa-solid fa-dice-d20"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-white text-lg tracking-tight">Custom Repository Builder
+                        </h1>
+                        <span
+                            class="bg-amber-500/20 px-2 py-0.5 border border-amber-500/30 rounded-full font-semibold text-amber-400 text-xs">Tested
+                            on v.14</span>
+                    </div>
+                    <p class="text-slate-400 text-xs"><span data-i18n="nav.subtitle">Генератор та редактор
+                            каталогу</span> <span class="font-mono text-amber-300">repository.json</span></p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Language Switcher (UA / EN) -->
+                <div class="flex items-center bg-foundry-950 p-1 border border-foundry-border rounded-lg text-xs"
+                    role="group" aria-label="Language selector">
+                    <button type="button" id="lang-btn-uk"
+                        class="flex items-center gap-1.5 bg-amber-500 shadow-sm px-2.5 py-1 rounded-md font-semibold text-slate-950 text-xs transition lang-switch-btn active"
+                        title="Українська мова" aria-label="Українська">
+                        <span>🇺🇦</span>
+                        <span>UA</span>
+                    </button>
+                    <button type="button" id="lang-btn-en"
+                        class="flex items-center gap-1.5 hover:bg-foundry-800 px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 text-xs transition lang-switch-btn"
+                        title="English language" aria-label="English">
+                        <span>🇬🇧</span>
+                        <span>EN</span>
+                    </button>
+                </div>
+
+
+                <!-- Import Existing Repo -->
+                <button id="btn-import-repo-modal" title="Імпортувати готовий repository.json"
+                    data-i18n-title="nav.importRepoTitle"
+                    class="flex items-center gap-1.5 bg-foundry-800 hover:bg-foundry-700 px-3 py-1.5 border border-foundry-border rounded-lg font-medium text-slate-200 text-xs transition">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span class="hidden md:inline" data-i18n="nav.importRepo">Імпорт repo.json</span>
+                </button>
+
+                <!-- Copy JSON -->
+                <button id="btn-copy-json-nav" title="Скопіювати JSON у буфер" data-i18n-title="nav.copyTitle"
+                    class="flex items-center gap-1.5 bg-foundry-800 hover:bg-foundry-700 px-3 py-1.5 border border-foundry-border rounded-lg font-medium text-slate-200 text-xs transition">
+                    <i class="fa-regular fa-copy"></i>
+                    <span class="hidden md:inline" data-i18n="nav.copy">Копіювати</span>
+                </button>
+
+                <!-- Download repository.json -->
+                <button id="btn-download-repo-nav" title="Завантажити готовий repository.json"
+                    data-i18n-title="nav.downloadTitle"
+                    class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 hover:from-amber-400 to-amber-600 hover:to-amber-500 shadow-md px-3.5 py-1.5 rounded-lg font-semibold text-slate-950 text-xs active:scale-95 transition transform">
+                    <i class="fa-solid fa-download"></i>
+                    <span data-i18n="nav.download">Завантажити JSON</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 space-y-10 mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl">
+
+        <!-- SECTION 1: CREATE / CONFIGURE REPOSITORY -->
+        <section id="create-repository"
+            class="relative bg-foundry-card shadow-xl p-6 border border-foundry-border rounded-xl overflow-hidden">
+            <div class="-top-16 -right-16 absolute bg-amber-500/5 blur-3xl rounded-full w-64 h-64 pointer-events-none">
+            </div>
+
+            <div
+                class="flex sm:flex-row flex-col justify-between sm:items-center gap-4 mb-6 pb-4 border-foundry-border border-b">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="flex justify-center items-center bg-amber-500/20 rounded-md w-7 h-7 font-bold text-amber-400 text-sm">1</span>
+                        <h2 class="font-bold text-white text-xl tracking-tight" data-i18n="repo.title">Параметри
+                            репозиторію</h2>
+                    </div>
+                    <p class="mt-1 text-slate-400 text-sm" data-i18n-html="repo.subtitle">Основні метадані каталогу для
+                        відображення у Foundry VTT Setup (кореневий об'єкт <span
+                            class="font-mono text-amber-400 text-xs">repository.json</span>)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-reset-repo" type="button"
+                        class="flex items-center gap-1 bg-foundry-800 px-2.5 py-1 border border-foundry-border hover:border-red-500/40 rounded text-slate-400 hover:text-red-400 text-xs transition">
+                        <i class="text-[11px] fa-rotate-left fa-solid"></i> <span data-i18n="repo.resetBtn">Скинути
+                            поля</span>
+                    </button>
+                </div>
+            </div>
+
+            <form id="form-repository" class="space-y-6">
+                <div class="gap-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    <!-- ID Репозиторію -->
+                    <div>
+                        <label for="repo-id"
+                            class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                            <span data-i18n="repo.idLabel">ID репозиторію</span> <span class="text-amber-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="repo-id" required pattern="[a-zA-Z0-9_\-]+"
+                                placeholder="наприклад: my-custom-repo" data-i18n-placeholder="repo.idPlaceholder"
+                                class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-sm transition placeholder-slate-500">
+                            <span class="top-2.5 right-3 absolute text-slate-500 text-xs"
+                                title="Унікальний ідентифікатор без пробілів">id</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-400" data-i18n="repo.idHint">Унікальний ID (літери, цифри,
+                            дефіс)</p>
+                    </div>
+
+                    <!-- Назва репозиторію -->
+                    <div>
+                        <label for="repo-name"
+                            class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                            <span data-i18n="repo.nameLabel">Назва репозиторію</span> <span
+                                class="text-amber-500">*</span>
+                        </label>
+                        <input type="text" id="repo-name" required placeholder="наприклад: Community Repository"
+                            data-i18n-placeholder="repo.namePlaceholder"
+                            class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-sm transition placeholder-slate-500">
+                        <p class="mt-1 text-[11px] text-slate-400" data-i18n="repo.nameHint">Відображається в картках
+                            пакетів та бейджах</p>
+                    </div>
+
+                    <!-- Версія репозиторію -->
+                    <div>
+                        <label for="repo-version"
+                            class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                            <span data-i18n="repo.versionLabel">Версія каталогу</span> <span
+                                class="text-amber-500">*</span>
+                        </label>
+                        <input type="text" id="repo-version" required placeholder="1.0.0" value="1.0.0"
+                            data-i18n-placeholder="repo.versionPlaceholder"
+                            class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-sm transition placeholder-slate-500">
+                        <p class="mt-1 text-[11px] text-slate-400" data-i18n="repo.versionHint">Версія у форматі SemVer
+                            (1.0.0)</p>
+                    </div>
+
+                    <!-- Автор / Організація -->
+                    <div>
+                        <label for="repo-author"
+                            class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                            data-i18n="repo.authorLabel">
+                            Автор / Організація
+                        </label>
+                        <input type="text" id="repo-author" placeholder="наприклад: Community / Team"
+                            data-i18n-placeholder="repo.authorPlaceholder"
+                            class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-sm transition placeholder-slate-500">
+                    </div>
+
+                    <!-- Сайт / Домашня сторінка -->
+                    <div>
+                        <label for="repo-site"
+                            class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                            data-i18n="repo.siteLabel">
+                            Сайт / Домашня сторінка
+                        </label>
+                        <input type="url" id="repo-site" placeholder="https://example.com"
+                            data-i18n-placeholder="repo.sitePlaceholder"
+                            class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-sm transition placeholder-slate-500">
+                    </div>
+
+                    <!-- Іконка / Обкладинка (Cover) -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="repo-cover"
+                                class="block font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="repo.coverLabel">
+                                Іконка репозиторію (44×44)
+                            </label>
+                            <button type="button" id="btn-random-avatar"
+                                class="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300">
+                                <i class="fa-solid fa-dice"></i> DiceBear
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="flex flex-shrink-0 justify-center items-center bg-foundry-950 p-0.5 border border-foundry-border rounded-md w-9 h-9 overflow-hidden">
+                                <img id="repo-cover-preview"
+                                    src="https://api.dicebear.com/10.x/blobs/svg?tags=animation&seed=crm-repo"
+                                    alt="Cover" class="rounded w-full h-full object-cover">
+                            </div>
+                            <input type="url" id="repo-cover" placeholder="URL квадратної іконки (SVG/PNG)"
+                                data-i18n-placeholder="repo.coverPlaceholder"
+                                class="flex-1 bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 text-slate-100 text-sm transition placeholder-slate-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Опис репозиторію -->
+                <div>
+                    <label for="repo-description"
+                        class="block mb-1.5 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                        data-i18n="repo.descLabel">
+                        Опис репозиторію
+                    </label>
+                    <textarea id="repo-description" rows="2" placeholder="Короткий опис колекції пакетів..."
+                        data-i18n-placeholder="repo.descPlaceholder"
+                        class="bg-foundry-950 px-3.5 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-sm transition resize-none placeholder-slate-500"></textarea>
+                </div>
+
+                <!-- Соціальні мережі та посилання (social[]) -->
+                <div class="pt-2 border-foundry-border/60 border-t">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <span class="font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="repo.socialHeader">Соціальні посилання (Discord, Telegram, GitHub
+                                тощо)</span>
+                            <span class="ml-2 text-slate-500 text-xs"
+                                data-i18n="repo.socialOptional">(необов'язково)</span>
+                        </div>
+                        <button type="button" id="btn-add-social"
+                            class="flex items-center gap-1 bg-foundry-800 hover:bg-foundry-700 px-2.5 py-1 border border-amber-500/30 rounded text-amber-400 hover:text-amber-300 text-xs transition">
+                            <i class="text-[10px] fa-solid fa-plus"></i> <span data-i18n="repo.addSocialBtn">Додати
+                                посилання</span>
+                        </button>
+                    </div>
+                    <div id="social-links-list" class="space-y-2">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </form>
+        </section>
+
+
+        <!-- SECTION 2: ADD PACKAGE & IMPORT ENGINE -->
+        <section id="add-package"
+            class="relative bg-foundry-card shadow-xl p-6 border border-foundry-border rounded-xl">
+            <div
+                class="flex sm:flex-row flex-col justify-between sm:items-center gap-4 mb-6 pb-4 border-foundry-border border-b">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="flex justify-center items-center bg-amber-500/20 rounded-md w-7 h-7 font-bold text-amber-400 text-sm">2</span>
+                        <h2 class="font-bold text-white text-xl tracking-tight" data-i18n="addPkg.title">Додавання
+                            пакетів</h2>
+                    </div>
+                    <p class="mt-1 text-slate-400 text-sm" data-i18n-html="addPkg.subtitle">Додавайте модулі, системи та
+                        світи: імпортуйте готові <span class="font-mono text-amber-400 text-xs">module.json</span> або
+                        заповнюйте вручну</p>
+                </div>
+
+                <!-- Tab Switchers -->
+                <div class="inline-flex bg-foundry-950 p-1 border border-foundry-border rounded-lg">
+                    <button id="tab-btn-import" type="button"
+                        class="flex items-center gap-2 bg-amber-500 shadow px-3.5 py-1.5 rounded-md font-medium font-semibold text-slate-950 text-xs transition tab-btn active">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span data-i18n="addPkg.tabImport">Імпорт з Manifest</span>
+                    </button>
+                    <button id="tab-btn-manual" type="button"
+                        class="flex items-center gap-2 px-3.5 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 text-xs transition tab-btn">
+                        <i class="fa-pen-to-square fa-solid"></i>
+                        <span data-i18n="addPkg.tabManual">Ручне введення пакета</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUB-PANEL 1: MANIFEST IMPORT HUB -->
+            <div id="panel-import" class="space-y-6">
+
+                <!-- Drag & Drop Zone -->
+                <div id="drop-zone"
+                    class="group bg-foundry-950/60 p-8 border-2 border-foundry-border hover:border-amber-500/70 border-dashed rounded-xl text-center transition cursor-pointer">
+                    <input type="file" id="file-manifest-input" multiple accept=".json" class="hidden">
+                    <div
+                        class="flex justify-center items-center bg-amber-500/10 group-hover:bg-amber-500/20 mx-auto mb-3 rounded-full w-14 h-14 text-amber-400 text-2xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-file-code"></i>
+                    </div>
+                    <h3 class="mb-1 font-semibold text-slate-200 text-base" data-i18n-html="addPkg.dropzoneTitle">
+                        Перетягніть файли <span class="font-mono text-amber-400">module.json</span> / <span
+                            class="font-mono text-amber-400">system.json</span> сюди
+                    </h3>
+                    <p class="mx-auto mb-4 max-w-md text-slate-400 text-xs" data-i18n="addPkg.dropzoneDesc">
+                        Підтримується завантаження декількох файлів одночасно. Метадані будуть автоматично вилучені та
+                        перетворені у формат пакета репозиторію.
+                    </p>
+                    <button type="button" id="btn-browse-files"
+                        class="inline-flex items-center gap-2 bg-foundry-800 hover:bg-foundry-700 px-4 py-2 border border-foundry-border rounded-lg font-semibold text-slate-200 text-xs transition">
+                        <i class="text-amber-400 fa-solid fa-folder-open"></i> <span
+                            data-i18n="addPkg.browseFilesBtn">Обрати файли на диску</span>
+                    </button>
+                </div>
+
+
+                <!-- URL & RAW TEXT COLLAPSIBLE ACCORDIONS -->
+                <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+                    <!-- URL Import -->
+                    <div class="bg-foundry-950/70 p-4 border border-foundry-border rounded-xl">
+                        <label for="input-manifest-url"
+                            class="block flex items-center gap-1.5 mb-2 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                            <i class="text-amber-400 fa-solid fa-link"></i> <span
+                                data-i18n="addPkg.urlImportLabel">Імпорт маніфесту за прямим посиланням (URL)</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="url" id="input-manifest-url"
+                                placeholder="https://raw.githubusercontent.com/.../module.json"
+                                data-i18n-placeholder="addPkg.urlImportPlaceholder"
+                                class="flex-1 bg-foundry-900 px-3 py-1.5 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 text-slate-100 text-xs placeholder-slate-500">
+                            <button type="button" id="btn-fetch-url"
+                                class="flex items-center gap-1 bg-foundry-800 hover:bg-foundry-700 px-3 py-1.5 border border-foundry-border rounded-lg font-semibold text-amber-400 text-xs transition">
+                                <i class="fa-solid fa-download"></i> <span
+                                    data-i18n="addPkg.fetchUrlBtn">Завантажити</span>
+                            </button>
+                        </div>
+                        <p class="mt-1.5 text-[11px] text-slate-400" data-i18n="addPkg.urlImportHint">Посилання на
+                            віддалений raw JSON файл маніфесту</p>
+                    </div>
+
+                    <!-- Raw JSON Paste -->
+                    <div class="bg-foundry-950/70 p-4 border border-foundry-border rounded-xl">
+                        <label for="textarea-raw-manifest"
+                            class="block flex items-center gap-1.5 mb-2 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                            <i class="text-amber-400 fa-solid fa-code"></i> <span
+                                data-i18n="addPkg.rawPasteLabel">Вставити JSON маніфесту напряму</span>
+                        </label>
+                        <div class="space-y-2">
+                            <textarea id="textarea-raw-manifest" rows="2"
+                                placeholder='{"id": "my-module", "title": "...", "version": "1.0.0", ...}'
+                                class="bg-foundry-900 p-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs resize-none placeholder-slate-500"></textarea>
+                            <div class="flex justify-end">
+                                <button type="button" id="btn-parse-raw-manifest"
+                                    class="flex items-center gap-1.5 bg-foundry-800 hover:bg-amber-500 px-3 py-1.5 border border-foundry-border rounded-lg font-semibold text-slate-200 hover:text-slate-950 text-xs transition">
+                                    <i class="fa-solid fa-check"></i> <span data-i18n="addPkg.parseRawBtn">Розібрати та
+                                        додати</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SUB-PANEL 2: MANUAL PACKAGE ENTRY FORM -->
+            <div id="panel-manual" class="hidden space-y-6">
+                <form id="form-manual-package" class="space-y-6">
+                    <div class="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                        <!-- Package ID -->
+                        <div>
+                            <label for="pkg-id"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.manualIdLabel">ID Пакета</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <input type="text" id="pkg-id" required pattern="[a-zA-Z0-9_\-]+"
+                                placeholder="my-custom-module" data-i18n-placeholder="addPkg.manualIdPlaceholder"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+
+                        <!-- Package Title -->
+                        <div>
+                            <label for="pkg-title"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.manualTitleLabel">Назва пакета</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <input type="text" id="pkg-title" required placeholder="My Custom Module"
+                                data-i18n-placeholder="addPkg.manualTitlePlaceholder"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+
+                        <!-- Package Type -->
+                        <div>
+                            <label for="pkg-type"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.manualTypeLabel">Тип пакета</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <select id="pkg-type"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-xs">
+                                <option value="module" data-i18n="addPkg.typeModule">Модуль (module)</option>
+                                <option value="system" data-i18n="addPkg.typeSystem">Ігрова система (system)</option>
+                                <option value="world" data-i18n="addPkg.typeWorld">Світ / Пригода (world)</option>
+                            </select>
+                        </div>
+
+                        <!-- Package Version -->
+                        <div>
+                            <label for="pkg-version"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.manualVersionLabel">Версія</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <input type="text" id="pkg-version" required placeholder="1.0.0" value="1.0.0"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+                    </div>
+
+                    <!-- Compatibility Row -->
+                    <div
+                        class="gap-4 grid grid-cols-1 md:grid-cols-3 bg-foundry-950/40 p-3.5 border border-foundry-border/60 rounded-lg">
+                        <div>
+                            <label for="pkg-compat-verified"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.verifiedLabel">Перевірено для Foundry (verified)</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <input type="text" id="pkg-compat-verified" required placeholder="14" value="14"
+                                data-i18n-placeholder="addPkg.verifiedPlaceholder"
+                                class="bg-foundry-900 px-3.5 py-1.5 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                            <span class="text-[10px] text-slate-400" data-i18n="addPkg.verifiedHint">Наприклад: "14"
+                                (відображається бейджем у VTT)</span>
+                        </div>
+                        <div>
+                            <label for="pkg-compat-min"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.minLabel">
+                                Мін. версія Foundry (minimum)
+                            </label>
+                            <input type="text" id="pkg-compat-min" placeholder="13" value="13"
+                                class="bg-foundry-900 px-3.5 py-1.5 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+                        <div>
+                            <label for="pkg-compat-max"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.maxLabel">
+                                Макс. версія Foundry (maximum)
+                            </label>
+                            <input type="text" id="pkg-compat-max" placeholder="14" value="14"
+                                class="bg-foundry-900 px-3.5 py-1.5 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+                    </div>
+
+                    <!-- URLs Row -->
+                    <div class="gap-4 grid grid-cols-1 md:grid-cols-3">
+                        <div>
+                            <label for="pkg-manifest-url"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                                <span data-i18n="addPkg.manifestUrlLabel">Посилання на Manifest (manifest)</span> <span
+                                    class="text-amber-500">*</span>
+                            </label>
+                            <input type="url" id="pkg-manifest-url" required
+                                placeholder="https://.../releases/latest/download/module.json"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                            <span class="text-[10px] text-slate-400" data-i18n="addPkg.manifestUrlHint">Використовується
+                                кнопкою «Install» у Foundry</span>
+                        </div>
+
+                        <div>
+                            <label for="pkg-download-url"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.downloadUrlLabel">
+                                Посилання на архів (download)
+                            </label>
+                            <input type="url" id="pkg-download-url"
+                                placeholder="https://.../releases/latest/download/module.zip"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                            <span class="text-[10px] text-slate-400" data-i18n="addPkg.downloadUrlHint">Пряме посилання
+                                на ZIP файл пакета</span>
+                        </div>
+
+                        <div>
+                            <label for="pkg-project-url"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.projectUrlLabel">
+                                Сторінка проєкту (url)
+                            </label>
+                            <input type="url" id="pkg-project-url" placeholder="https://github.com/user/repo"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full font-mono text-slate-100 text-xs placeholder-slate-500">
+                            <span class="text-[10px] text-slate-400" data-i18n="addPkg.projectUrlHint">Посилання на
+                                GitHub або документацію</span>
+                        </div>
+                    </div>
+
+                    <!-- Author and Languages Row -->
+                    <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+                        <div>
+                            <label for="pkg-author-name"
+                                class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.authorNameLabel">
+                                Автор пакета (ім'я або нік)
+                            </label>
+                            <input type="text" id="pkg-author-name" placeholder="наприклад: JohnDoe"
+                                data-i18n-placeholder="addPkg.authorNamePlaceholder"
+                                class="bg-foundry-950 px-3 py-2 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-xs placeholder-slate-500">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.languagesLabel">
+                                Підтримувані мови
+                            </label>
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="text" id="pkg-custom-lang"
+                                    placeholder="Код мови (наприклад: en, ru, uk, de)"
+                                    data-i18n-placeholder="addPkg.languagesPlaceholder"
+                                    class="flex-1 bg-foundry-950 px-3 py-1.5 border border-foundry-border focus:border-amber-500 rounded-lg focus:ring-1 focus:ring-amber-500 font-mono text-slate-100 text-xs">
+                                <button type="button" id="btn-add-lang-manual"
+                                    class="bg-foundry-800 hover:bg-foundry-700 px-2.5 py-1.5 border border-foundry-border rounded-lg font-medium text-slate-200 text-xs">
+                                    <span data-i18n="addPkg.addLangBtn">+ Додати</span>
+                                </button>
+                            </div>
+                            <div id="pkg-languages-chips" class="flex flex-wrap gap-1.5 min-h-[28px]">
+                                <!-- Selected language tags -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Tags Selection (Official Foundry Tags) -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="block font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                                data-i18n="addPkg.tagsLabel">
+                                Категорії та теги (Foundry Tags)
+                            </label>
+                            <span class="text-[11px] text-slate-400" data-i18n="addPkg.tagsHint">Клікніть, щоб обрати
+                                категорії пакета</span>
+                        </div>
+                        <div id="foundry-tags-selector"
+                            class="flex flex-wrap gap-1.5 bg-foundry-950/60 p-3 border border-foundry-border rounded-lg max-h-36 overflow-y-auto">
+                            <!-- Populated with all 24 official tags -->
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label for="pkg-desc"
+                            class="block mb-1 font-semibold text-slate-300 text-xs uppercase tracking-wider"
+                            data-i18n="addPkg.pkgDescLabel">
+                            Опис пакета
+                        </label>
+                        <textarea id="pkg-desc" rows="3"
+                            placeholder="Детальний опис функцій модуля, призначення та особливостей..."
+                            data-i18n-placeholder="addPkg.pkgDescPlaceholder"
+                            class="bg-foundry-950 p-3 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-xs resize-none placeholder-slate-500"></textarea>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex justify-between items-center pt-2 border-foundry-border border-t">
+                        <button type="reset" id="btn-reset-package-form"
+                            class="bg-foundry-800 hover:bg-foundry-700 px-4 py-2 border border-foundry-border rounded-lg font-medium text-slate-300 text-xs transition">
+                            <span data-i18n="addPkg.clearFormBtn">Очистити форму</span>
+                        </button>
+                        <button type="submit" id="btn-submit-manual-package"
+                            class="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 shadow-lg px-5 py-2 rounded-lg font-semibold text-slate-950 text-xs transition">
+                            <i class="font-bold fa-solid fa-plus"></i> <span data-i18n="addPkg.submitPkgBtn">Додати
+                                пакет до репозиторію</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: REPOSITORY PACKAGES & FOUNDRY PREVIEW -->
+        <section id="packages" class="space-y-6 bg-foundry-card shadow-xl p-6 border border-foundry-border rounded-xl">
+            <div
+                class="flex md:flex-row flex-col justify-between md:items-center gap-4 pb-4 border-foundry-border border-b">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex justify-center items-center bg-amber-500/20 rounded-md w-7 h-7 font-bold text-amber-400 text-sm">3</span>
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h2 class="font-bold text-white text-xl tracking-tight" data-i18n="packages.title">Вміст
+                                репозиторію</h2>
+                            <span id="badge-package-count"
+                                class="bg-amber-500/15 px-2.5 py-0.5 border border-amber-500/30 rounded-full font-semibold text-amber-300 text-xs">0
+                                пакетів</span>
+                        </div>
+                        <p class="text-slate-400 text-xs" data-i18n="packages.subtitle">Керуйте списком пакетів та
+                            переглядайте, як вони виглядають у Foundry VTT</p>
+                    </div>
+                </div>
+
+                <!-- View Mode Toggle & Clear All -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="inline-flex bg-foundry-950 p-1 border border-foundry-border rounded-lg">
+                        <button id="view-mode-manage" type="button"
+                            class="flex items-center gap-1.5 bg-amber-500 shadow px-3.5 py-1.5 rounded-md font-medium font-semibold text-slate-950 text-xs transition">
+                            <i class="fa-list-check fa-solid"></i>
+                            <span data-i18n="packages.manageView">Керування</span>
+                        </button>
+                        <button id="view-mode-preview" type="button"
+                            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 text-xs transition">
+                            <i class="fa-solid fa-eye"></i>
+                            <span data-i18n="packages.previewView">Foundry VTT Прев'ю</span>
+                        </button>
+                    </div>
+
+                    <button id="btn-clear-all-packages" type="button" title="Видалити всі пакети зі списку"
+                        data-i18n-title="packages.clearAllTitle"
+                        class="flex items-center gap-1 bg-foundry-800 hover:bg-red-950/40 px-2.5 py-1.5 border border-foundry-border hover:border-red-500/40 rounded-lg font-medium text-slate-400 hover:text-red-400 text-xs transition">
+                        <i class="fa-regular fa-trash-can"></i>
+                        <span class="hidden sm:inline" data-i18n="packages.clearAllBtn">Очистити список</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div
+                class="flex sm:flex-row flex-col justify-between items-center gap-3 bg-foundry-950/60 p-3 border border-foundry-border rounded-lg">
+                <div class="relative w-full sm:w-72">
+                    <i class="top-2.5 left-3 absolute text-slate-500 text-xs fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-packages-input"
+                        placeholder="Пошук за назвою, ID, автором або тегом..."
+                        data-i18n-placeholder="packages.searchPlaceholder"
+                        class="bg-foundry-900 py-1.5 pr-3 pl-8 border border-foundry-border focus:border-amber-500 rounded-lg outline-none focus:ring-1 focus:ring-amber-500 w-full text-slate-100 text-xs placeholder-slate-500">
+                </div>
+
+                <!-- Type Filter Pills -->
+                <div class="flex items-center gap-1.5 pb-1 sm:pb-0 w-full sm:w-auto overflow-x-auto">
+                    <button type="button" data-type-filter="all"
+                        class="bg-amber-500 btn-filter-type px-2.5 py-1 rounded-md font-medium text-slate-950 text-xs transition active"
+                        data-i18n="packages.filterAll">Всі</button>
+                    <button type="button" data-type-filter="module"
+                        class="bg-foundry-800 btn-filter-type px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-slate-100 text-xs transition"
+                        data-i18n="packages.filterModule">Модулі</button>
+                    <button type="button" data-type-filter="system"
+                        class="bg-foundry-800 btn-filter-type px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-slate-100 text-xs transition"
+                        data-i18n="packages.filterSystem">Системи</button>
+                    <button type="button" data-type-filter="world"
+                        class="bg-foundry-800 btn-filter-type px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-slate-100 text-xs transition"
+                        data-i18n="packages.filterWorld">Світи</button>
+                </div>
+            </div>
+
+            <!-- Empty State (shown when packages list is empty) -->
+            <div id="packages-empty-state"
+                class="px-4 py-12 border border-foundry-border border-dashed rounded-xl text-center">
+                <div
+                    class="flex justify-center items-center bg-foundry-800 mx-auto mb-3 rounded-full w-12 h-12 text-slate-400 text-xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="mb-1 font-semibold text-slate-200 text-sm" data-i18n="packages.emptyTitle">Репозиторій поки
+                    що порожній</h3>
+                <p class="mx-auto max-w-sm text-slate-400 text-xs" data-i18n="packages.emptyDesc">
+                    Додайте перший пакет за допомогою імпорту маніфесту вище або заповніть поля вручну.
+                </p>
+            </div>
+
+            <!-- Packages Container (Lists or Foundry Cards) -->
+            <div id="packages-container" class="space-y-3 min-h-[60px]">
+                <!-- Package items will be rendered dynamically here -->
+            </div>
+
+            <!-- SECTION 4: LIVE JSON CODE VIEWER & EXPORT ACCORDION -->
+            <div class="mt-8 pt-6 border-foundry-border border-t">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="text-amber-400 fa-solid fa-code"></i>
+                        <h3 class="font-bold text-slate-100 text-base" data-i18n-html="export.title">Live генерація
+                            <span class="font-mono text-amber-400 text-sm">repository.json</span>
+                        </h3>
+                        <span id="json-size-badge"
+                            class="bg-foundry-950 px-2 py-0.5 border border-foundry-border rounded font-mono text-[11px] text-slate-400">0
+                            KB</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button id="btn-copy-json" type="button"
+                            class="flex items-center gap-1.5 bg-foundry-800 hover:bg-foundry-700 px-3 py-1.5 border border-foundry-border rounded-lg font-medium text-slate-200 text-xs transition">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="export.copyBtn">Копіювати</span>
+                        </button>
+                        <button id="btn-download-json-bottom" type="button"
+                            class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 shadow px-4 py-1.5 rounded-lg font-semibold text-slate-950 text-xs transition">
+                            <i class="fa-solid fa-download"></i>
+                            <span data-i18n="export.downloadBtn">Завантажити repository.json</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Validation Status Alert -->
+                <div id="validation-box"
+                    class="flex items-center gap-2 bg-emerald-950/30 mb-3 p-3 border border-emerald-500/30 rounded-lg text-emerald-300 text-xs">
+                    <i class="flex-shrink-0 text-emerald-400 fa-solid fa-circle-check"></i>
+                    <span id="validation-text" data-i18n="export.validText">Структура репозиторію повністю валідна та
+                        готова для додавання до Foundry VTT v14!</span>
+                </div>
+
+                <!-- JSON Code Block -->
+                <div
+                    class="relative bg-foundry-950 shadow-inner border border-foundry-border rounded-xl overflow-hidden">
+                    <div
+                        class="flex justify-between items-center bg-foundry-900/80 px-4 py-2 border-foundry-border/70 border-b text-slate-400 text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-red-500/60 rounded-full w-2.5 h-2.5"></span>
+                            <span class="bg-amber-500/60 rounded-full w-2.5 h-2.5"></span>
+                            <span class="bg-emerald-500/60 rounded-full w-2.5 h-2.5"></span>
+                            <span class="ml-2 font-mono text-[11px] text-slate-300">repository.json</span>
+                        </div>
+                        <span class="text-[11px] text-slate-500" data-i18n="export.autoUpdateHint">Автоматичне оновлення
+                            при кожній зміні</span>
+                    </div>
+                    <pre
+                        class="p-4 max-h-96 overflow-x-auto font-mono text-slate-300 text-xs leading-relaxed"><code id="json-preview-code">{}</code></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-foundry-900 mt-12 py-6 border-foundry-border border-t text-slate-500 text-xs text-center">
+        <div class="flex sm:flex-row flex-col justify-between items-center gap-3 mx-auto px-4 max-w-7xl">
+            <div class="flex items-center gap-2">
+                <i class="text-amber-500 fa-solid fa-shield-halved"></i>
+                <span data-i18n="footer.title">Custom Repository Manager (CRM-FVTT)</span>
+            </div>
+            <div data-i18n="footer.desc">
+                Сумісно з Foundry VTT v14 • Створено для швидкого керування пакетами
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- MODAL 1: EDIT PACKAGE MODAL -->
+    <dialog id="modal-edit-package"
+        class="bg-foundry-card backdrop:bg-slate-950/80 shadow-2xl p-6 border border-foundry-border rounded-xl w-full max-w-2xl text-slate-100">
+        <div class="flex justify-between items-center mb-5 pb-3 border-foundry-border border-b">
+            <div class="flex items-center gap-2">
+                <i class="text-amber-400 text-sm fa-solid fa-pen"></i>
+                <h3 class="font-bold text-white text-lg" data-i18n="editModal.title">Редагування пакета</h3>
+            </div>
+            <button type="button" id="btn-close-edit-modal" class="p-1 rounded text-slate-400 hover:text-white">
+                <i class="text-lg fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="form-edit-package" class="space-y-4">
+            <input type="hidden" id="edit-pkg-index">
+
+            <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
+                <div>
+                    <label for="edit-pkg-id" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.idLabel">ID пакета</label>
+                    <input type="text" id="edit-pkg-id" required
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-title" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.titleLabel">Назва</label>
+                    <input type="text" id="edit-pkg-title" required
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-type" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.typeLabel">Тип</label>
+                    <select id="edit-pkg-type"
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full text-slate-100 text-xs">
+                        <option value="module" data-i18n="editModal.typeModule">Модуль (module)</option>
+                        <option value="system" data-i18n="editModal.typeSystem">Ігрова система (system)</option>
+                        <option value="world" data-i18n="editModal.typeWorld">Світ (world)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit-pkg-version" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.versionLabel">Версія</label>
+                    <input type="text" id="edit-pkg-version" required
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+                </div>
+            </div>
+
+            <!-- Compat Row -->
+            <div class="gap-3 grid grid-cols-3 bg-foundry-950/60 p-3 border border-foundry-border/70 rounded-lg">
+                <div>
+                    <label for="edit-pkg-compat-min" class="block mb-1 font-semibold text-[11px] text-slate-400"
+                        data-i18n="editModal.compatMin">Minimum</label>
+                    <input type="text" id="edit-pkg-compat-min"
+                        class="bg-foundry-900 px-2.5 py-1 border border-foundry-border rounded w-full font-mono text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-compat-verified" class="block mb-1 font-semibold text-[11px] text-slate-400"
+                        data-i18n="editModal.compatVerified">Verified</label>
+                    <input type="text" id="edit-pkg-compat-verified" required
+                        class="bg-foundry-900 px-2.5 py-1 border border-foundry-border rounded w-full font-mono text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-compat-max" class="block mb-1 font-semibold text-[11px] text-slate-400"
+                        data-i18n="editModal.compatMax">Maximum</label>
+                    <input type="text" id="edit-pkg-compat-max"
+                        class="bg-foundry-900 px-2.5 py-1 border border-foundry-border rounded w-full font-mono text-slate-100 text-xs">
+                </div>
+            </div>
+
+            <!-- URLs -->
+            <div>
+                <label for="edit-pkg-manifest" class="block mb-1 font-semibold text-slate-300 text-xs"
+                    data-i18n="editModal.manifestUrl">Manifest URL</label>
+                <input type="url" id="edit-pkg-manifest" required
+                    class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+            </div>
+
+            <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
+                <div>
+                    <label for="edit-pkg-download" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.downloadUrl">Download URL (.zip)</label>
+                    <input type="url" id="edit-pkg-download"
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-url" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.projectUrl">Project URL</label>
+                    <input type="url" id="edit-pkg-url"
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+                </div>
+            </div>
+
+            <!-- Author & Languages -->
+            <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
+                <div>
+                    <label for="edit-pkg-author" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.authorLabel">Автор</label>
+                    <input type="text" id="edit-pkg-author"
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full text-slate-100 text-xs">
+                </div>
+                <div>
+                    <label for="edit-pkg-languages" class="block mb-1 font-semibold text-slate-300 text-xs"
+                        data-i18n="editModal.languagesLabel">Мови (через кому)</label>
+                    <input type="text" id="edit-pkg-languages" placeholder="en, uk, de"
+                        data-i18n-placeholder="editModal.languagesPlaceholder"
+                        class="bg-foundry-950 px-3 py-1.5 border border-foundry-border rounded-lg w-full font-mono text-slate-100 text-xs">
+                </div>
+            </div>
+
+            <!-- Tags selector in edit modal -->
+            <div>
+                <label class="block mb-1 font-semibold text-slate-300 text-xs" data-i18n="editModal.tagsLabel">Теги та
+                    категорії</label>
+                <div id="edit-foundry-tags-selector"
+                    class="flex flex-wrap gap-1.5 bg-foundry-950 p-2 border border-foundry-border rounded-lg max-h-28 overflow-y-auto">
+                    <!-- Checkable tags -->
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label for="edit-pkg-desc" class="block mb-1 font-semibold text-slate-300 text-xs"
+                    data-i18n="editModal.descLabel">Опис</label>
+                <textarea id="edit-pkg-desc" rows="3"
+                    class="bg-foundry-950 p-2.5 border border-foundry-border rounded-lg w-full text-slate-100 text-xs resize-none"></textarea>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex justify-end items-center gap-3 pt-3 border-foundry-border border-t">
+                <button type="button" id="btn-cancel-edit-modal"
+                    class="bg-foundry-800 hover:bg-foundry-700 px-4 py-2 rounded-lg font-medium text-slate-300 text-xs"
+                    data-i18n="editModal.cancelBtn">
+                    Скасувати
+                </button>
+                <button type="submit"
+                    class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-semibold text-slate-950 text-xs">
+                    <i class="fa-solid fa-check"></i> <span data-i18n="editModal.saveBtn">Зберегти зміни</span>
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+
+    <!-- MODAL 2: IMPORT EXISTING REPOSITORY.JSON -->
+    <dialog id="modal-import-repo"
+        class="bg-foundry-card backdrop:bg-slate-950/80 shadow-2xl p-6 border border-foundry-border rounded-xl w-full max-w-lg text-slate-100">
+        <div class="flex justify-between items-center mb-4 pb-3 border-foundry-border border-b">
+            <div class="flex items-center gap-2">
+                <i class="text-amber-400 text-sm fa-solid fa-file-import"></i>
+                <h3 class="font-bold text-white text-lg" data-i18n="importModal.title">Імпорт існуючого repository.json
+                </h3>
+            </div>
+            <button type="button" id="btn-close-import-repo-modal" class="p-1 rounded text-slate-400 hover:text-white">
+                <i class="text-lg fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <p class="text-slate-400 text-xs" data-i18n-html="importModal.desc">
+                Завантажте файл <span class="font-mono text-amber-400">repository.json</span> або вставте його вміст,
+                щоб продовжити редагування.
+            </p>
+
+            <div class="bg-foundry-950/60 p-5 border-2 border-foundry-border hover:border-amber-500/60 border-dashed rounded-xl text-center cursor-pointer"
+                id="repo-file-dropzone">
+                <input type="file" id="input-repo-file" accept=".json" class="hidden">
+                <i class="mb-2 text-amber-400 text-2xl fa-solid fa-cloud-arrow-up"></i>
+                <div class="font-semibold text-slate-200 text-xs" data-i18n="importModal.dropzoneTitle">Оберіть файл
+                    repository.json</div>
+                <div class="mt-1 text-[11px] text-slate-500" data-i18n="importModal.dropzoneHint">або перетягніть його в
+                    цю область</div>
+            </div>
+
+            <div>
+                <label for="textarea-import-repo" class="block mb-1 font-semibold text-slate-300 text-xs"
+                    data-i18n="importModal.pasteLabel">Або вставте JSON текст:</label>
+                <textarea id="textarea-import-repo" rows="5"
+                    placeholder='{"id": "my-repo", "name": "...", "packages": [...]}'
+                    class="bg-foundry-950 p-2.5 border border-foundry-border focus:border-amber-500 rounded-lg outline-none w-full font-mono text-slate-200 text-xs resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-end items-center gap-3 pt-3 border-foundry-border border-t">
+                <button type="button" id="btn-cancel-import-repo"
+                    class="bg-foundry-800 hover:bg-foundry-700 px-4 py-2 rounded-lg font-medium text-slate-300 text-xs"
+                    data-i18n="importModal.cancelBtn">
+                    Скасувати
+                </button>
+                <button type="button" id="btn-submit-import-repo"
+                    class="bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-semibold text-slate-950 text-xs"
+                    data-i18n="importModal.submitBtn">
+                    Завантажити репозиторій
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"
+        class="right-5 bottom-5 z-50 fixed flex flex-col gap-2 w-full max-w-sm pointer-events-none"></div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+
+</html>

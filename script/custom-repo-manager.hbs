@@ -1,0 +1,82 @@
+{{!-- Configured Sources Section --}}
+<fieldset class="sources-fieldset">
+    <legend><i class="fa-solid fa-boxes-stacked"></i> Configured Sources ({{repos.length}})</legend>
+    
+    {{#if repos.length}}
+    <div class="repo-list scrollable">
+        {{#each repos}}
+        <div class="repo-item" data-url="{{this.url}}">
+            <label class="repo-checkbox" title="Enable or disable repository">
+                <input type="checkbox" data-action="toggleRepo" data-url="{{this.url}}" {{#if this.enabled}}checked{{/if}}>
+            </label>
+            <div class="repo-cover">
+                {{#if this.cover}}
+                <img src="{{this.cover}}" alt="" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block';">
+                <i class="fa-solid fa-box-archive" style="display: none;"></i>
+                {{else}}
+                <i class="fa-solid fa-box-archive"></i>
+                {{/if}}
+            </div>
+            <div class="repo-info">
+                <div class="repo-header">
+                    <strong class="repo-title" title="{{this.name}}">{{this.name}}</strong>
+                    {{#if this.id}}
+                    <span class="tag monospace">{{this.id}}</span>
+                    {{/if}}
+                    {{#if this.author}}
+                    <span class="tag author"><i class="fa-solid fa-user-pen"></i> {{this.author}}</span>
+                    {{/if}}
+                    {{#if this.packageCount}}
+                    <span class="tag badge neutral"><i class="fa-solid fa-boxes-stacked"></i> {{this.packageCount}} packages</span>
+                    {{/if}}
+                </div>
+                <div class="hint repo-url" title="{{this.url}}">{{this.url}}</div>
+                {{#if this.description}}
+                <p class="hint repo-description">{{this.description}}</p>
+                {{/if}}
+                <div class="repo-meta tags">
+                    {{#if this.site}}
+                    <a class="tag" href="{{this.site}}" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-globe"></i> Website
+                    </a>
+                    {{/if}}
+                    {{#if this.socialDisplay}}
+                    {{#each this.languagesDisplay as |language|}}
+        <span class="tag" title="{{language}}">
+            <i class="fa-solid fa-language" inert></i>
+            <span>{{language}}</span>
+        </span>
+        {{/each}}
+                    {{/if}}
+                </div>
+            </div>
+            <div class="repo-actions">
+                <button type="button" class="inline-control icon delete-repo-btn" data-action="deleteRepo" data-url="{{this.url}}" title="Remove repository">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    {{else}}
+    <p class="hint empty-hint">No repositories configured yet.</p>
+    {{/if}}
+</fieldset>
+
+{{!-- Add New Repository Section --}}
+<fieldset class="add-repo-fieldset">
+    <legend><i class="fa-solid fa-plus-circle"></i> Add New Repository</legend>
+    <div class="form-group">
+        <label for="new-repo-url-input">Repository Manifest URL</label>
+        <div class="form-fields">
+            <input type="text" id="new-repo-url-input" placeholder="https://example.com/repository.json" autocomplete="off">
+            <button type="button" data-action="addRepo">
+                <i class="fa-solid fa-cloud-arrow-down"></i> Add &amp; Fetch
+            </button>
+        </div>
+        <p id="add-repo-feedback" class="hint"></p>
+    </div>
+</fieldset>
+
+{{!-- Hidden file input for backup restore --}}
+<input type="file" id="import-repos-file-input" accept=".json,application/json" class="hidden">

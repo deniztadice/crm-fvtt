@@ -1,0 +1,81 @@
+{{#each packages}}
+<div class="form-group slim package" data-package-id="{{this.id}}" data-tags="{{this.tagsString}}"
+    data-systems="{{this.systemsString}}" data-languages="{{this.languagesString}}" data-author="{{this.authorName}}"
+    data-installed="{{this.isInstalled}}" data-search-text="{{this.searchText}}">
+    <span class="label ellipsis" data-action="setManifestUrl" title="{{this.title}}" style="display: flex;">{{this.title}}
+
+        <div class="form-fields">
+            {{#if this.url}}
+            <a href="{{this.url}}" rel="nofollow" target="_blank"
+                class="button inline-control icon fa-solid fa-arrow-up-right-from-square" data-tooltip
+                aria-label="Website"></a>
+            {{/if}}
+            {{#if this.isInstalled}}
+            {{#if this.hasUpdate}}
+            <button type="button" class="install-package update" data-action="installCustomPackage"
+                data-manifest="{{this.manifest}}" data-type="{{this.type}}"
+                style="border-color: var(--color-level-warning); color: var(--color-level-warning);">
+                <i class="fa-solid fa-rotate" inert></i>
+                <span>Update (v{{this.version}})</span>
+            </button>
+            {{else}}
+            <button type="button" disabled>
+                <i class="fa-solid fa-check" inert></i>
+                <span>Installed</span>
+            </button>
+            {{/if}}
+            {{else}}
+            <button type="button" class="install-package" data-action="installCustomPackage"
+                data-manifest="{{this.manifest}}" data-type="{{this.type}}">
+                <i class="fa-solid fa-download" inert></i>
+                <span>Install</span>
+            </button>
+            {{/if}}
+        </div>
+    </span>
+    <div class="tags flexrow" style="justify-content: start; margin-top: -0.5rem;">
+        {{#if this.repoName}}
+        <span class="tag badge neutral repo-badge" style="height: 1.2rem;"
+            title="Repository: {{this.repoName}}{{#if this.repoAuthor}} by {{this.repoAuthor}}{{/if}}">
+            <i class="fa-solid fa-database" style="line-height: unset;" inert></i>
+            <span>{{this.repoName}}</span>
+        </span>
+        {{/if}}
+    </div>
+
+    <p class="hint ellipsis" title="{{this.description}}">{{#if this.description}}{{this.description}}{{else}}No
+        description available.{{/if}}</p>
+<div class="tags flexrow" style="justify-content: start">
+        {{#if this.languagesDisplay}}
+        {{#each this.languagesDisplay as |language|}}
+        <span class="tag" style="height: 1.2rem;" title="{{language}}">
+            <i class="fa-solid fa-language" style="line-height: unset;" inert></i>
+            <span>{{language}}</span>
+        </span>
+        {{/each}}
+        {{/if}}
+        </div>
+
+    <div class="tags flexrow">
+        {{#if this.url}}
+        <a class="ellipsis" href="{{this.url}}" rel="nofollow nocontroller" target="_blank" data-tooltip
+            aria-label="Website">{{this.url}}</a>
+        {{else if this.manifest}}
+        <a class="ellipsis" href="{{this.manifest}}" rel="nofollow nocontroller" target="_blank" data-tooltip
+            aria-label="Manifest">{{this.manifest}}</a>
+        {{/if}}
+        <span class="tag" data-searchable hidden>{{this.id}}</span>
+
+        <span class="tag flexrow author" data-searchable>{{this.authorName}}</span>
+        <span class="tag flexrow version">v{{this.version}}{{#if this.isInstalled}} (Local:
+            {{this.localVersion}}){{/if}}</span>
+        {{#if this.systemsString}}
+        <span class="tag flexrow system">{{this.systemsString}}</span>
+        {{/if}}
+        
+        <span class="tag flexrow badge {{this.badgeType}}">
+            Verified v{{this.verifiedVer}}
+        </span>
+    </div>
+</div>
+{{/each}}
