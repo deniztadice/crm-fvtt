@@ -1,6 +1,6 @@
 # Custom Repository Manager for VTT
 
-[Українська версія](README_UA.md)
+🇺🇦 [Українська версія](README_UA.md)
 
 A patch/modification for **Foundry Virtual Tabletop** that introduces native support for third-party, private, and community package repositories (modules, game systems, and worlds) directly within the application's user interface.
 

@@ -1,6 +1,6 @@
 # Custom Repository Manager for VTT
 
-[English version](README.md)
+🇬🇧 [English version](README.md)
 
 Патч/модифікація для **Foundry Virtual Tabletop**, що додає нативну підтримку сторонніх, приватних та спільнотних репозиторіїв пакунків (модулів, ігрових систем і світів) безпосередньо в інтерфейс застосунку.
 
